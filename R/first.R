@@ -26,8 +26,8 @@
 
 .check_installs <- Vectorize(.check_install)
 
-.start <- function(backend = c("XRJulia", "JuliaCall")){
-    backend <- match.arg(backend, c("XRJulia", "JuliaCall"))
+.start <- function(backend = c("JuliaCall", "XRJulia")){
+    backend <- match.arg(backend, c("JuliaCall", "XRJulia"))
     .convex$backend <- backend
     message("Doing initialization. It may take some time. Please wait.")
     ## evaluator initialization
@@ -41,10 +41,10 @@
             stop("Package JuliaCall needed for using this backend. Please install it.")
         }
         .convex$ev <- JuliaCall::julia_setup()
-        .convex$ev$Command <- .convex$ev$command
+        .convex$ev$Command <- function(cmd) .convex$ev$command(cmd, show_value = FALSE)
         .convex$ev$Eval <-
             function(cmd, .get = FALSE) {
-                .convex$ev$eval_string(cmd)
+                .convex$ev$eval(cmd)
             }
         ## if using earlier version of JuliaCall, we need to define the assign function
         ## to use later.
@@ -57,25 +57,21 @@
 
     ## Packages
     if (all(.check_installs(c("Convex", "SCS")))) {
-        .convex$ev$Command("using Convex")
-        .convex$ev$Command("using SCS")
+        ## if use JuliaCall backend, use julia_library instead
+        if (backend == "JuliaCall") {
+            JuliaCall::julia_library("Convex")
+            JuliaCall::julia_library("SCS")
+        }
+        else {
+            .convex$ev$Command("using Convex")
+            .convex$ev$Command("using SCS")
+        }
         # passing in verbose=0 to hide output from SCS
         .convex$ev$Command("solver = SCSSolver(verbose=0);")
         .convex$ev$Command("set_default_solver(solver);")
         .convex$status <- .convex$ev$Eval("true")
     }
     else {message("Packages' installation is not successful.")}
-    .convex$status
-}
-
-#' Doing the setup for the package convexjlr (deprecated)
-#'
-#' The function is deprecated, should use convex_setup instead.
-#'
-#' @export
-setup <- function(){
-    .Deprecated("convex_setup")
-    try(.start(), silent = FALSE)
     .convex$status
 }
 
@@ -89,13 +85,17 @@ setup <- function(){
 #' Finally, it will try to load the Julia packages and do the necessary initial setup.
 #'
 #' @param backend whether to use XRJulia or JuliaCall as backend
+#' @param JULIA_HOME the path to julia binary,
+#'     if not set, convexjlr will try to use the julia in path.
 #'
 #' @examples
 #' \dontrun{
 #' convex_setup()
 #' }
 #' @export
-convex_setup <- function(backend = c("XRJulia", "JuliaCall")){
+convex_setup <- function(backend = c("JuliaCall", "XRJulia"), JULIA_HOME = NULL){
+    options(JULIA_BIN = JULIA_HOME)
+    options(JULIA_HOME = JULIA_HOME)
     try(.start(backend = backend), silent = FALSE)
     .convex$status
 }

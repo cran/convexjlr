@@ -1,16 +1,17 @@
-# convexjlr 0.5.0
+# convexjlr 0.7.0
 
-* The first release on CRAN.
+* Remove deprecated `setup` function.
+* Use `JuliaCall` as the default backend.
 
-# convexjlr 0.5.1
+# convexjlr 0.6.1.9000
 
-* A patch release on CRAN.
+* Fix deprecation warnings from `JuliaCall` backend.
+* Fix some little bugs.
+* Add the option in `convex_setup` to set the path to `julia` binary.
 
-# convexjlr 0.5.1.9000
+# convexjlr 0.6.1
 
-* Added a `NEWS.md` file to track changes to the package.
-* Re-organize tests.
-* Deprecate `setup`, should use `convex_setup`.
+* The second release on CRAN.
 
 # convexjlr 0.6.0.9000
 
@@ -27,4 +28,17 @@
     you may wish to use `JuliaCall` backend for `convexjlr`;
     the disadvantage is the installation process, since embedding `julia` needs
     compilations.
-    
+
+# convexjlr 0.5.1.9000
+
+* Added a `NEWS.md` file to track changes to the package.
+* Re-organize tests.
+* Deprecate `setup`, should use `convex_setup`.
+
+# convexjlr 0.5.1
+
+* A patch release on CRAN.
+
+# convexjlr 0.5.0
+
+* The first release on CRAN.
