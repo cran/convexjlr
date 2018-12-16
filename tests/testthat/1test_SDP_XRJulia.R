@@ -1,5 +1,5 @@
 library(convexjlr)
-context("Semidefinite Programming")
+context("Semidefinite Programming with XRJulia backend")
 
 ## The original Julia version
 
@@ -8,9 +8,9 @@ context("Semidefinite Programming")
 # solve!(p, SCSSolver(verbose=0))
 # p.optval
 
-test_that("Results for example of semidefinite programming", {
+test_that("Results for example of semidefinite programming with XRJulia", {
     skip_on_cran()
-    convex_setup()
+    convex_setup(backend = "XRJulia")
 
     ## The R version with convexjl.R
 
@@ -20,7 +20,7 @@ test_that("Results for example of semidefinite programming", {
 
     ## The R version with XRJulia directly
 
-    ev <- XRJulia::RJulia()
+    ## ev <- XRJulia::RJulia()
     ev$Command("using Convex")
     ev$Command("y = Semidefinite(2)")
     ev$Command("p = maximize(lambdamin(y), trace(y)<=6)")

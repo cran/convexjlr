@@ -6,13 +6,15 @@
 .convex$status <- FALSE
 
 .check <- function(pkgname){
-    command <- paste0('Pkg.installed("', pkgname, '") == nothing')
-    !.convex$ev$Eval(command)
+    JuliaCall::julia_installed_package(pkg_name = pkgname) != "nothing"
+    # command <- paste0('Pkg.installed("', pkgname, '") == nothing')
+    # !.convex$ev$Eval(command)
 }
 
 .install <- function(pkgname){
-    command <- paste0('Pkg.add("', pkgname, '")')
-    .convex$ev$Command(command)
+    JuliaCall::julia_install_package(pkg_name = pkgname)
+    # command <- paste0('Pkg.add("', pkgname, '")')
+    # .convex$ev$Command(command)
     TRUE
 }
 
@@ -32,14 +34,15 @@
     message("Doing initialization. It may take some time. Please wait.")
     ## evaluator initialization
     if (backend == "XRJulia") {
-        stopifnot(XRJulia::findJulia(test = TRUE))
-        .convex$ev <- XRJulia::RJulia()
+        stop("Only JuliaCall backend is supported currently.")
+        # stopifnot(XRJulia::findJulia(test = TRUE))
+        # .convex$ev <- XRJulia::RJulia()
     }
     if (backend == "JuliaCall") {
         ## check is JuliaCall is installed
-        if (!requireNamespace("JuliaCall", quietly = TRUE)) {
-            stop("Package JuliaCall needed for using this backend. Please install it.")
-        }
+        # if (!requireNamespace("JuliaCall", quietly = TRUE)) {
+        #     stop("Package JuliaCall needed for using this backend. Please install it.")
+        # }
         .convex$ev <- JuliaCall::julia_setup()
         .convex$ev$Command <- function(cmd) .convex$ev$command(cmd, show_value = FALSE)
         .convex$ev$Eval <-
@@ -56,19 +59,22 @@
     }
 
     ## Packages
-    if (all(.check_installs(c("Convex", "SCS")))) {
+    if (all(.check_installs(c("Convex", "SCS", "ECOS")))) {
         ## if use JuliaCall backend, use julia_library instead
         if (backend == "JuliaCall") {
             JuliaCall::julia_library("Convex")
             JuliaCall::julia_library("SCS")
+            JuliaCall::julia_library("ECOS")
         }
         else {
-            .convex$ev$Command("using Convex")
-            .convex$ev$Command("using SCS")
+            stop("Only JuliaCall backend is supported currently.")
+            # .convex$ev$Command("using Convex")
+            # .convex$ev$Command("using SCS")
+            # .convex$ev$Command("using ECOS")
         }
         # passing in verbose=0 to hide output from SCS
-        .convex$ev$Command("solver = SCSSolver(verbose=0);")
-        .convex$ev$Command("set_default_solver(solver);")
+        # .convex$ev$Command("solver = SCSSolver(verbose=0);")
+        # .convex$ev$Command("set_default_solver(solver);")
         .convex$status <- .convex$ev$Eval("true")
     }
     else {message("Packages' installation is not successful.")}
@@ -84,7 +90,7 @@
 #' if the packages are not found, it tries to install them into Julia.
 #' Finally, it will try to load the Julia packages and do the necessary initial setup.
 #'
-#' @param backend whether to use XRJulia or JuliaCall as backend
+#' @param backend the backend to use, only JuliaCall is supported currently.
 #' @param JULIA_HOME the path to julia binary,
 #'     if not set, convexjlr will try to use the julia in path.
 #'
@@ -93,9 +99,26 @@
 #' convex_setup()
 #' }
 #' @export
-convex_setup <- function(backend = c("JuliaCall", "XRJulia"), JULIA_HOME = NULL){
+convex_setup <- function(backend = c("JuliaCall"), JULIA_HOME = NULL){
     options(JULIA_BIN = JULIA_HOME)
     options(JULIA_HOME = JULIA_HOME)
     try(.start(backend = backend), silent = FALSE)
+    def_func()
     .convex$status
+}
+
+def_func <- function(){
+    cmd <- "function diag1(x)
+                if length(size(x)) == 2 && size(x, 2) > 1
+                    return(diag(x))
+                else
+                    return(diagm(x))
+                end
+            end;"
+
+    .convex$ev$Command(cmd)
+
+    cmd <- '@static if VERSION > v"0.6.5" const trace = tr end;'
+
+    .convex$ev$Command(cmd)
 }

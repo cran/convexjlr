@@ -1,5 +1,5 @@
 library(convexjlr)
-context("Second Order Cone Programming with JuliaCall")
+context("Second Order Cone Programming with JuliaCall in ECOS solver")
 
 ## The original Julia version
 
@@ -12,7 +12,7 @@ context("Second Order Cone Programming with JuliaCall")
 # println(y.value)
 # p.optval
 
-test_that("Results for example of second order cone programming with JuliaCall", {
+test_that("Results for example of second order cone programming in ECOS", {
     skip_on_cran()
     convex_setup(backend = "JuliaCall")
 
@@ -21,7 +21,7 @@ test_that("Results for example of second order cone programming with JuliaCall",
     X <- Variable(c(2, 2))
     y <- Variable()
     p <- minimize(norm(vec(X)) + y, 2 * X <= 1, t(X) + y >= 1, X >= 0, y >= 0)
-    cvx_optim(p)
+    cvx_optim(p, solver = "ECOS")
 
     ## The R version with XRJulia directly
 
@@ -34,11 +34,11 @@ test_that("Results for example of second order cone programming with JuliaCall",
     ev$command("X = Variable(2, 2)")
     ev$command("y = Variable()")
     ev$command("p = minimize(norm(vec(X)) + y, 2 * X <= 1, X' + y >= 1, X >= 0, y >= 0)")
-    ev$command("solve!(p, SCSSolver())")
+    ev$command("solve!(p, ECOSSolver())")
 
     ## Compare the results
 
-    expect_equal(optval(p), ev$eval("p.optval"))
-    expect_equal(value(X), ev$eval("X.value")) ##, .get = TRUE))
-    expect_equal(value(y), ev$eval("evaluate(y)")) ##, .get = TRUE))
+    expect_equal(optval(p), ev$eval("p.optval"), tolerance = 1e-3)
+    expect_equal(value(X), ev$eval("X.value"), tolerance = 1e-3)
+    expect_equal(value(y), ev$eval("evaluate(y)"), tolerance = 1e-3)
 })

@@ -53,6 +53,14 @@ satisfy <- problem_creator("satisfy")
 #' \code{cvx_optim} solves optimization problem using Convex.jl.
 #'
 #' @param p optimization problem to be solved.
+#' @param solver convex problem solver to be used. Currently `convexjlr` supports `SCS` and `ECOS`,
+#'   with `SCS` solver as the default.
+#' @param ... the optional solver options, like the maximal iteration times.
+#'   For the solver options, you can see
+#'   <http://www.cvxpy.org/tutorial/advanced/index.html#setting-solver-options>
+#'   for reference.
+#' @md
+#'
 #' @return status of optimized problem.
 #'
 #' @examples
@@ -64,9 +72,23 @@ satisfy <- problem_creator("satisfy")
 #'     cvx_optim(p)
 #' }
 #' @export
-cvx_optim <- function(p){
-    .convex$ev$Command(paste0("solve!(", attr(p, "Jname"), ")"))
+cvx_optim <- function(p, solver = c("SCS", "ECOS"), ...){
+    solver <- match.arg(solver)
+    cmd <- if (solver == "SCS") SCSSolver(...) else ECOSSolver(...)
+    .convex$ev$Command(paste0("solve!(", attr(p, "Jname"), ", ", cmd, ")"))
     status(p)
+}
+
+SCSSolver <- function(max_iters = 2500, verbose = 1,
+                      eps = 1e-3, alpha = 1.8,
+                      scale = 5.0, normalize = 1){
+    deparse(match.call(), width.cutoff = 500)
+}
+
+ECOSSolver <- function(maxit = 100, verbose = 1,
+                      feastol = 1e-7, abstol = 1e-7, reltol = 1e-6,
+                      festol_inacc = 1e-4, abstol_inacc = 5e-5, reltol_inacc = 5e-5){
+    deparse(match.call(), width.cutoff = 500)
 }
 
 #' Add constraints to optimization problem

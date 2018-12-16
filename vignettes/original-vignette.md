@@ -11,32 +11,29 @@ examples using package `convexjlr`:
 
 Although these problems already have mature solutions, the purpose here
 is to show the wide application of convex optimization and how you can
-use `convexjlr` to deal with them easily and extendably.
+use `convexjlr` to deal with them easily.
 
 Some of the examples here are of statistics nature (like Lasso and
 logistic regression), and some of the examples here are of
 machine-learning nature (like SVM), they may be appealing to readers
-with certain backgrounds. If you don't know either of this, don't be
+with certain backgrounds. If you don’t know either of this, don’t be
 afraid, the smallest circle problem requires no certain background
 knowledge.
 
 We hope you can get ideas for how to use `convexjlr` to solve your own
 problems by reading these examples. If you would like to share your
-experience on using `convexjlr`, don't hesitate to contact me:
+experience on using `convexjlr`, don’t hesitate to contact me:
 <cxl508@psu.edu>.
 
-Knowledge for convex optimization is not neccessary for using
+Knowledge for convex optimization is not necessary for using
 `convexjlr`, but it will help you a lot in formulating convex
 optimization problems and in using `convexjlr`.
 
 -   [Wikipedia page for convex
     optimization](https://en.wikipedia.org/wiki/Convex_optimization) is
     a good starting point.
--   [The page for Disciplined Convex
-    Programming](http://dcp.stanford.edu/) can teach you more about DCP,
-    which is the basis for `Convex.jl` and thus `convexjlr`.
 -   [Github page for `Convex.jl`](https://github.com/JuliaOpt/Convex.jl)
-    can give you more imformation for `Convex.jl`, which `convexjlr` is
+    can give you more information for `Convex.jl`, which `convexjlr` is
     built upon.
 
 To use package `convexjlr`, we first need to attach it and do some
@@ -58,13 +55,7 @@ initial setup:
 
     ## Doing initialization. It may take some time. Please wait.
 
-    ## Julia at location /Applications/Julia-0.6.app/Contents/Resources/julia/bin will be used.
-
-    ## Julia version 0.6.0 found.
-
-    ## Julia initiation...
-
-    ## Finish Julia initiation.
+    ## Julia version 1.0.2 at location /Applications/Julia-1.0.app/Contents/Resources/julia/bin will be used.
 
     ## Loading setup script for JuliaCall...
 
@@ -116,7 +107,7 @@ built.
 
     n <- 1000
     p <- 100
-    ## Sigma, the covariance matrix of x, is of AR-1 strcture.
+    ## Sigma, the covariance matrix of x, is of AR-1 structure.
     Sigma <- outer(1:p, 1:p, function(i, j) 0.5 ^ abs(i - j))
     x <- matrix(rnorm(n * p), n, p) %*% chol(Sigma)
     ## The real coefficient is all zero except the first, second and fourth elements.
@@ -127,7 +118,7 @@ built.
     betahat <- round(lasso(x, y, 0.5)$coef, 4)
     betahat[1:4]
 
-    ## [1] 4.8216 0.9073 0.0000 1.8121
+    ## [1] 4.8192 0.9062 0.0000 1.8094
 
     ## You can see that the rest elements of betahat are all zero.
     all(betahat[5:p] == 0)
@@ -169,10 +160,8 @@ log-likelihood, there is a little trick: we use
 `logisticloss(x %*% beta)` instead of `log(1+exp(x %*% beta))`, that is
 because `logisticloss(.)` is a convex function but by rule of
 Disciplined Convex Programming (DCP), we are not sure whether
-`log(1+exp(.))` is convex or not.
-
-Interested readers can check <http://dcp.stanford.edu/rules> for more
-information about the rule of DCP, and use `?operations` or check
+`log(1+exp(.))` is convex or not. Interested readers can use
+`?operations` or check
 <http://convexjl.readthedocs.io/en/stable/operations.html> for a full
 list of supported operations.
 
@@ -193,13 +182,13 @@ we have just built.
     logistic_regression(x, y)
 
     ##            [,1]
-    ## [1,]  0.9723159
-    ## [2,] -0.9953264
+    ## [1,]  0.9723167
+    ## [2,] -0.9953277
 
 Support Vector Machine
 ----------------------
 
-Support vector machine (SVM) is a classificaiton tool. In this vignette,
+Support vector machine (SVM) is a classification tool. In this vignette,
 we just focus on the soft-margin linear SVM. Interested reader can read
 more about SVM in the Wikipedia page [Support vector
 machine](https://en.wikipedia.org/wiki/Support_vector_machine).
@@ -218,7 +207,7 @@ Let us first see the `svm` function using `convexjlr`:
         ## w and b define the classification hyperplane <w.x> = b.
         w <- Variable(p)
         b <- Variable()
-        ## hinge_loss, note that pos(.) is the positive part function. 
+        ## hinge_loss, note that pos(.) is the positive part function.
         hinge_loss <- Expr(sum(pos(1 - y * (x %*% w - b))) / n)
         p1 <- minimize(hinge_loss + lambda * sumsquares(w))
         cvx_optim(p1)
@@ -231,14 +220,14 @@ we have (we assume it to be of negative one or one in this section).
 between the margin-size and classification error rate. As `lambda`
 becomes smaller, the classification error rate is more important. And
 the `svm` function will return the `w` and `b` which define the
-classification hyperplance as `<w, x> = b`.
+classification hyperplane as `<w, x> = b`.
 
 Now we can see a little example using the `svm` function we have just
 built.
 
     n <- 100
     p <- 2
-    ## Sigma, the covariance matrix of x, is of AR-1 strcture.
+    ## Sigma, the covariance matrix of x, is of AR-1 structure.
     Sigma <- outer(1:p, 1:p, function(i, j) 0.5 ^ abs(i - j))
     ## We generate two groups of points with same covariance and different mean.
     x1 <- 0.2 * matrix(rnorm(n / 2 * p), n / 2, p) %*% chol(Sigma) + outer(rep(1, n / 2), rep(0, p))
@@ -252,13 +241,13 @@ built.
 
     ## $w
     ##            [,1]
-    ## [1,] -0.4799765
-    ## [2,] -0.4828068
+    ## [1,] -0.4798997
+    ## [2,] -0.4827123
     ## 
     ## $b
-    ## [1] -0.4648332
+    ## [1] -0.4261342
 
-    ## We can scatter-plot the points and 
+    ## We can scatter-plot the points and
     ## draw the classification hyperplane returned by the function svm.
     plot(x, col = c(rep("red", n / 2), rep("blue", n / 2)))
     abline(r$b / r$w[2], -r$w[1] / r$w[2])
@@ -311,8 +300,8 @@ built.
     p
 
     ##            [,1]
-    ## [1,] -0.4637779
-    ## [2,]  0.2347155
+    ## [1,] -0.4686643
+    ## [2,]  0.2271158
 
     ## Draw the points and the smallest circle that covers all of them.
     plot(x, y, asp = 1)

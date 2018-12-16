@@ -1,3 +1,18 @@
+# convexjlr 0.8.0.9000
+* Updates for `Julia` v0.7 and v1.0.
+* Drop `XRJulia` support, as it does not work with `Julia` v0.7 and v1.0.
+
+# convexjlr 0.7.1.9000
+
+* Default `SCS` solver doesn't have `verbose = FALSE` default option any more.
+* Users can choose `ECOS` as the solver for convex problems.
+* Users can set a bunch of options for both `SCS` and `ECOS` solvers.
+
+# convexjlr 0.7.0.9000
+
+* The users can set maximal iteration times for the convex problem solver in `cvx_optim`.
+* Bug correction for handling of `diag`.
+
 # convexjlr 0.7.0
 
 * Remove deprecated `setup` function.

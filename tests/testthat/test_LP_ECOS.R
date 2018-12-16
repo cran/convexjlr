@@ -1,5 +1,5 @@
 library(convexjlr)
-context("Linear Programming with JuliaCall")
+context("Linear Programming with JuliaCall in ECOS solver")
 
 ## The original Julia version
 
@@ -15,7 +15,7 @@ context("Linear Programming with JuliaCall")
 # println(round(x.value, 2))
 # println(evaluate(x[1] + x[4] - x[2]))
 
-test_that("Results for example of linear programming with JuliaCall", {
+test_that("Results for example of linear programming in ECOS", {
     skip_on_cran()
     convex_setup(backend = "JuliaCall")
 
@@ -28,7 +28,7 @@ test_that("Results for example of linear programming with JuliaCall", {
     p <- minimize(sum(c * x))
     p <- addConstraint(p, A %*% x <= b)
     p <- addConstraint(p, x >= 1, x <= 10, x[2] <= 5, x[1] + x[4] - x[2] <= 10)
-    cvx_optim(p, solver = "SCS")
+    cvx_optim(p, solver = "ECOS")
 
     ## The R verion through XRJulia directly
 
@@ -45,12 +45,13 @@ test_that("Results for example of linear programming with JuliaCall", {
     ev$command("p = minimize(dot(c, x)) # or c' * x")
     ev$command("p.constraints += A * x <= b")
     ev$command("p.constraints += [x >= 1; x <= 10; x[2] <= 5; x[1] + x[4] - x[2] <= 10]")
-    ev$command("solve!(p, SCSSolver())")
+    ev$command("solve!(p, ECOSSolver())")
 
     ## Compare the results
 
-    expect_equal(optval(p), ev$eval("p.optval"))
-    expect_equal(value(x), ev$eval("x.value")) ##, .get = TRUE))
+    expect_equal(optval(p), ev$eval("p.optval"), tolerance = 1e-3)
+    expect_equal(value(x), ev$eval("x.value"), tolerance = 1e-3)
     expect_equal(value(x[1] + x[4] - x[2]),
-                 ev$Eval("evaluate(x[1] + x[4] - x[2])")) ##, .get = TRUE))
+                 ev$eval("evaluate(x[1] + x[4] - x[2])"),
+                 tolerance = 1e-3)
 })
